@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06060f"/>
+      <stop offset="100%" style="stop-color:#12002a"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="20%" cy="30%" r="50%">
+      <stop offset="0%" style="stop-color:#6d28d9;stop-opacity:0.35"/>
+      <stop offset="100%" style="stop-color:#06060f;stop-opacity:0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="80%" cy="70%" r="50%">
+      <stop offset="0%" style="stop-color:#be185d;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#06060f;stop-opacity:0"/>
+    </radialGradient>
+    <linearGradient id="title-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f0ff"/>
+      <stop offset="100%" style="stop-color:#a78bfa"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow1)"/>
+  <rect width="1200" height="630" fill="url(#glow2)"/>
+
+  <!-- バッジ -->
+  <rect x="440" y="120" width="320" height="36" rx="18" fill="none" stroke="#6d28d9" stroke-opacity="0.6" stroke-width="1.5"/>
+  <text x="600" y="144" font-family="sans-serif" font-size="13" font-weight="600" fill="#a78bfa" text-anchor="middle" letter-spacing="3">POWERED BY ANILIST · FREE</text>
+
+  <!-- メインタイトル -->
+  <text x="600" y="270" font-family="sans-serif" font-size="72" font-weight="700" fill="url(#title-grad)" text-anchor="middle">アニメおすすめ検索</text>
+
+  <!-- サブタイトル -->
+  <text x="600" y="340" font-family="sans-serif" font-size="26" fill="#4b5563" text-anchor="middle">気分 · ジャンル · 配信サービス · 2人で探せる</text>
+
+  <!-- 特徴タグ -->
+  <rect x="270" y="400" width="150" height="44" rx="22" fill="#1a0a3a" stroke="#6d28d9" stroke-opacity="0.5" stroke-width="1"/>
+  <text x="345" y="428" font-family="sans-serif" font-size="18" fill="#c4b5fd" text-anchor="middle">完全無料</text>
+
+  <rect x="445" y="400" width="150" height="44" rx="22" fill="#1a0a3a" stroke="#6d28d9" stroke-opacity="0.5" stroke-width="1"/>
+  <text x="520" y="428" font-family="sans-serif" font-size="18" fill="#c4b5fd" text-anchor="middle">登録不要</text>
+
+  <rect x="620" y="400" width="150" height="44" rx="22" fill="#1a0a3a" stroke="#6d28d9" stroke-opacity="0.5" stroke-width="1"/>
+  <text x="695" y="428" font-family="sans-serif" font-size="18" fill="#c4b5fd" text-anchor="middle">日本語対応</text>
+
+  <rect x="795" y="400" width="150" height="44" rx="22" fill="#1a0a3a" stroke="#6d28d9" stroke-opacity="0.5" stroke-width="1"/>
+  <text x="870" y="428" font-family="sans-serif" font-size="18" fill="#c4b5fd" text-anchor="middle">2人で探せる</text>
+
+  <!-- 下部ライン -->
+  <line x1="100" y1="530" x2="1100" y2="530" stroke="#2a2a45" stroke-width="1"/>
+  <text x="600" y="565" font-family="sans-serif" font-size="16" fill="#374151" text-anchor="middle">anime-osusume.vercel.app</text>
+</svg>

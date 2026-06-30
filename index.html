@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ===== 基本SEO ===== -->
+  <title>アニメおすすめ検索 | 気分・サービス・2人で探せる無料アニメ発見アプリ</title>
+  <meta name="description" content="ジャンルや気分、話数、配信サービスでおすすめアニメを検索。2人で一緒に見る作品探しにも対応。完全無料・ログイン不要・APIキー不要。" />
+  <meta name="keywords" content="アニメ おすすめ, アニメ 検索, アニメ 気分, アニメ 2人, dアニメ, Netflix アニメ, アニメ 配信, アニメ 発見" />
+  <meta name="author" content="アニメおすすめ検索" />
+  <link rel="canonical" href="https://anime-osusume.vercel.app/" />
+
+  <!-- ===== OGP（SNSシェア時の見た目） ===== -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="アニメおすすめ検索 | 気分・サービスで探せる無料アニメ発見アプリ" />
+  <meta property="og:description" content="ジャンルや気分、配信サービス、話数でおすすめアニメを検索。2人で一緒に見る作品探しにも対応。完全無料。" />
+  <meta property="og:url" content="https://anime-osusume.vercel.app/" />
+  <meta property="og:site_name" content="アニメおすすめ検索" />
+  <meta property="og:locale" content="ja_JP" />
+  <meta property="og:image" content="https://anime-osusume.vercel.app/ogp.svg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <!-- ===== Twitter Card ===== -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="アニメおすすめ検索" />
+  <meta name="twitter:description" content="気分・ジャンル・配信サービスでおすすめアニメを発見。2人で見たい作品探しにも。無料。" />
+  <meta name="twitter:image" content="https://anime-osusume.vercel.app/ogp.svg" />
+
+  <!-- ===== ファビコン ===== -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
+
+  <!-- ===== 構造化データ（JSON-LD） ===== -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "アニメおすすめ検索",
+    "description": "ジャンルや気分、配信サービス、話数でおすすめアニメを検索できる無料Webアプリ。",
+    "url": "https://anime-osusume.vercel.app/",
+    "applicationCategory": "EntertainmentApplication",
+    "operatingSystem": "All",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "JPY"
+    },
+    "inLanguage": "ja"
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #06060f;
+      color: #e8e8f0;
+      font-family: "Inter", "Hiragino Kaku Gothic ProN", sans-serif;
+      overflow-x: hidden;
+    }
+
+    body::before, body::after {
+      content: "";
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::before {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, #6d28d9, transparent 70%);
+      top: -250px; left: -200px;
+    }
+    body::after {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, #be185d, transparent 70%);
+      bottom: -200px; right: -200px;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 3rem 1.25rem 6rem;
+    }
+
+    /* ── ヘッダー ── */
+    header { text-align: center; margin-bottom: 3rem; }
+
+    .badge {
+      display: inline-block;
+      background: rgba(109,40,217,0.2);
+      border: 1px solid rgba(109,40,217,0.45);
+      color: #a78bfa;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 0.28rem 0.9rem;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: clamp(1.9rem, 5vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      background: linear-gradient(130deg, #f0f0ff 30%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.7rem;
+    }
+
+    .subtitle { color: #4b5563; font-size: 0.97rem; }
+
+    /* ── モード切替タブ ── */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 0.35rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 0.7rem;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: #6b7280;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .tab-btn.active {
+      background: rgba(109,40,217,0.3);
+      color: #c4b5fd;
+    }
+
+    /* ── パネル共通 ── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .glass {
+      background: rgba(255,255,255,0.035);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 1.8rem 1.6rem;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .section-title::before {
+      content: "";
+      display: inline-block;
+      width: 3px; height: 12px;
+      background: linear-gradient(180deg, #7c3aed, #db2777);
+      border-radius: 2px;
+    }
+
+    /* ── チップ ── */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.4rem;
+    }
+
+    .chip {
+      padding: 0.38rem 0.85rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      color: #9ca3af;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.18s;
+      user-select: none;
+    }
+
+    .chip:hover { border-color: rgba(109,40,217,0.5); color: #c4b5fd; }
+
+    .chip.selected {
+      background: rgba(109,40,217,0.3);
+      border-color: rgba(109,40,217,0.7);
+      color: #c4b5fd;
+    }
+
+    /* ── テキスト入力 ── */
+    .input-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .input-wrap { position: relative; }
+
+    .input-wrap .lbl {
+      position: absolute;
+      left: 1rem; top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #4b5563;
+      pointer-events: none;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.82rem 1rem 0.82rem 2.4rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 11px;
+      color: #e8e8f0;
+      font-size: 0.92rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    input[type="text"]::placeholder { color: #2e2e45; }
+
+    input[type="text"]:focus {
+      border-color: rgba(109,40,217,0.55);
+      background: rgba(109,40,217,0.05);
+      box-shadow: 0 0 0 3px rgba(109,40,217,0.1);
+    }
+
+    /* 除外入力（小さめ） */
+    .exclude-wrap textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 11px;
+      color: #9ca3af;
+      font-size: 0.83rem;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 64px;
+      outline: none;
+      line-height: 1.6;
+      transition: border-color 0.2s;
+    }
+    .exclude-wrap textarea::placeholder { color: #2e2e45; }
+    .exclude-wrap textarea:focus { border-color: rgba(109,40,217,0.4); }
+
+    .hint { font-size: 0.72rem; color: #374151; margin-top: 0.35rem; }
+
+    /* 2人モード：人物カード */
+    .person-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 540px) { .person-grid { grid-template-columns: 1fr; } }
+
+    .person-card {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 1.2rem;
+    }
+
+    .person-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.9rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .person-a .person-label { background: rgba(59,130,246,0.2); color: #93c5fd; }
+    .person-b .person-label { background: rgba(236,72,153,0.2); color: #f9a8d4; }
+
+    .person-card .input-row { margin-bottom: 0.9rem; }
+
+    /* ── ボタン ── */
+    .btn-primary {
+      width: 100%;
+      padding: 0.95rem;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+      color: #fff;
+      font-size: 0.97rem;
+      font-weight: 700;
+      font-family: inherit;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn-primary::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background 0.2s;
+    }
+    .btn-primary:hover:not(:disabled)::after { background: rgba(255,255,255,0.08); }
+    .btn-primary:active:not(:disabled) { transform: scale(0.99); }
+    .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── メッセージ ── */
+    #message {
+      min-height: 1.5rem;
+      text-align: center;
+      font-size: 0.88rem;
+      color: #a78bfa;
+      margin: 0.8rem 0;
+    }
+    #message.error { color: #f87171; }
+
+    /* ── ローディング ── */
+    .loader {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 2.5rem 0;
+      color: #4b5563;
+      font-size: 0.88rem;
+    }
+    .loader.active { display: flex; }
+    .dots { display: flex; gap: 5px; }
+    .dots span {
+      width: 7px; height: 7px;
+      background: #7c3aed;
+      border-radius: 50%;
+      animation: bounce 0.9s ease-in-out infinite;
+    }
+    .dots span:nth-child(2) { animation-delay: 0.15s; }
+    .dots span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes bounce {
+      0%,100% { transform: translateY(0); opacity: 0.3; }
+      50%      { transform: translateY(-8px); opacity: 1; }
+    }
+
+    /* ── 結果エリア ── */
+    #results { display: none; margin-top: 0.5rem; }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-bottom: 1.8rem;
+    }
+    .results-header h2 { font-size: 1rem; font-weight: 600; }
+    .count-pill {
+      background: rgba(109,40,217,0.22);
+      border: 1px solid rgba(109,40,217,0.4);
+      color: #a78bfa;
+      font-size: 0.73rem;
+      font-weight: 700;
+      padding: 0.18rem 0.6rem;
+      border-radius: 999px;
+    }
+
+    .result-section { margin-bottom: 2.8rem; }
+
+    .section-label-result {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .section-label-result::before {
+      content: "";
+      display: inline-block;
+      width: 3px; height: 13px;
+      background: linear-gradient(180deg, #7c3aed, #db2777);
+      border-radius: 2px;
+    }
+
+    /* ── グリッド ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+      gap: 1rem;
+    }
+
+    @media (max-width: 400px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+
+    /* ── アニメカード ── */
+    .card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 13px;
+      overflow: hidden;
+      transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
+      cursor: default;
+    }
+    .card:hover {
+      transform: translateY(-5px) scale(1.02);
+      border-color: rgba(109,40,217,0.5);
+      box-shadow: 0 14px 36px rgba(109,40,217,0.15);
+    }
+
+    .card img {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      display: block;
+      background: #111120;
+    }
+
+    .no-poster {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      background: linear-gradient(135deg, #0f0f1e, #1a1a2e);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      color: #222235;
+      font-size: 2.2rem;
+    }
+    .no-poster small { font-size: 0.65rem; color: #222235; }
+
+    .card-body { padding: 0.8rem 0.8rem 0.9rem; }
+
+    .card-title {
+      font-size: 0.83rem;
+      font-weight: 600;
+      line-height: 1.35;
+      margin-bottom: 0.28rem;
+      color: #e8e8f0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-year { font-size: 0.7rem; color: #374151; }
+    .card-ep   { font-size: 0.7rem; color: #374151; }
+    .card-score { font-size: 0.7rem; color: #f59e0b; font-weight: 600; }
+    .dot { font-size: 0.5rem; color: #2a2a45; }
+
+    .card-genres {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.28rem;
+      margin-bottom: 0.5rem;
+    }
+    .genre-tag {
+      font-size: 0.62rem;
+      padding: 0.12rem 0.45rem;
+      border-radius: 999px;
+      background: rgba(109,40,217,0.15);
+      color: #7c5cbf;
+      border: 1px solid rgba(109,40,217,0.2);
+    }
+
+    .card-desc {
+      font-size: 0.72rem;
+      color: #4b5563;
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* match badge for 2人モード */
+    .match-badge {
+      display: inline-block;
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 0.12rem 0.5rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(59,130,246,0.25), rgba(236,72,153,0.25));
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #c4b5fd;
+      margin-bottom: 0.4rem;
+    }
+
+    /* divider */
+    .divider {
+      height: 1px;
+      background: rgba(255,255,255,0.05);
+      margin: 0.8rem 0 1.2rem;
+    }
+
+    /* ── βバッジ ── */
+    .chip .beta {
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: #f59e0b;
+      vertical-align: super;
+      margin-left: 1px;
+    }
+
+    /* ── 言語切替ボタン ── */
+    .lang-toggle {
+      position: fixed;
+      top: 1.1rem;
+      right: 1.2rem;
+      z-index: 100;
+      display: flex;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 999px;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    .lang-btn {
+      padding: 0.32rem 0.75rem;
+      border: none;
+      background: transparent;
+      color: #4b5563;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s;
+      letter-spacing: 0.05em;
+    }
+
+    .lang-btn.active {
+      background: rgba(109,40,217,0.35);
+      color: #c4b5fd;
+    }
+
+    /* ── 言語別タイトル表示切替 ── */
+    .title-en { display: none; }
+    .title-ja { display: block; }
+
+    body.lang-en .title-en { display: block; }
+    body.lang-en .title-ja { display: none; }
+  </style>
+</head>
+<body>
+<!-- 言語切替ボタン -->
+<div class="lang-toggle">
+  <button class="lang-btn active" id="lang-ja" onclick="setLang('ja')">JP</button>
+  <button class="lang-btn"        id="lang-en" onclick="setLang('en')">EN</button>
+</div>
+
+<div class="page">
+
+  <header>
+    <div class="badge">Powered by AniList · Free · No API Key</div>
+    <h1>あなたの次の<br/>お気に入りアニメ</h1>
+    <p class="subtitle">気分で探すか、2人で一緒に見る作品を見つけよう</p>
+  </header>
+
+  <!-- タブ -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchMode('mood')">🎭 気分で探す</button>
+    <button class="tab-btn"        onclick="switchMode('duo')">👥 2人で探す</button>
+  </div>
+
+  <!-- ── 気分モード ── -->
+  <div class="panel active" id="panel-mood">
+    <div class="glass">
+
+      <div class="section-title">ジャンル（複数選択OK）</div>
+      <div class="chips" id="genre-chips">
+        <span class="chip" data-val="Action">アクション</span>
+        <span class="chip" data-val="Romance">ロマンス</span>
+        <span class="chip" data-val="Comedy">コメディ</span>
+        <span class="chip" data-val="Drama">ドラマ</span>
+        <span class="chip" data-val="Fantasy">ファンタジー</span>
+        <span class="chip" data-val="Sci-Fi">SF</span>
+        <span class="chip" data-val="Horror">ホラー</span>
+        <span class="chip" data-val="Slice of Life">日常系</span>
+        <span class="chip" data-val="Mystery">ミステリー</span>
+        <span class="chip" data-val="Psychological">心理</span>
+        <span class="chip" data-val="Sports">スポーツ</span>
+        <span class="chip" data-val="Supernatural">超常現象</span>
+      </div>
+
+      <div class="section-title">今日の気分（追加でジャンルを絞り込み）</div>
+      <div class="chips" id="mood-chips">
+        <span class="chip" data-genres="Drama,Romance">😢 泣ける</span>
+        <span class="chip" data-genres="Comedy,Slice of Life">😂 笑える</span>
+        <span class="chip" data-genres="Action,Thriller">💥 ドキドキ</span>
+        <span class="chip" data-genres="Slice of Life,Comedy">🌿 癒される</span>
+        <span class="chip" data-genres="Psychological,Mystery">🤔 考えさせられる</span>
+      </div>
+
+      <div class="section-title">話数・長さ</div>
+      <div class="chips" id="length-chips">
+        <span class="chip selected" data-len="any">なんでも</span>
+        <span class="chip" data-len="short">短め（〜13話）</span>
+        <span class="chip" data-len="medium">普通（14〜26話）</span>
+        <span class="chip" data-len="long">長め（27話〜）</span>
+        <span class="chip" data-len="movie">映画</span>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-title">配信サービスで絞り込む（任意・複数OK）</div>
+      <div class="chips" id="stream-chips">
+        <span class="chip" data-val="Netflix">Netflix</span>
+        <span class="chip" data-val="Amazon">Prime Video</span>
+        <span class="chip" data-val="Disney">Disney+</span>
+        <span class="chip chip-beta" data-val="dAnime">dアニメ <span class="beta">β</span></span>
+        <span class="chip chip-beta" data-val="Abema">AbemaTV <span class="beta">β</span></span>
+        <span class="chip chip-beta" data-val="UNEXT">U-NEXT <span class="beta">β</span></span>
+      </div>
+      <div class="hint" style="margin-bottom:1.2rem">β付きは登録データが少なく、実際に配信中でもヒットしない場合があります</div>
+
+      <div class="section-title">視聴済み・除外したいタイトル（任意）</div>
+      <div class="exclude-wrap">
+        <textarea id="exclude-mood" placeholder="例：進撃の巨人、鬼滅の刃&#10;（改行またはカンマ区切りで複数入力）"></textarea>
+      </div>
+      <div class="hint">入力したタイトルは結果から除外されます</div>
+    </div>
+
+    <button class="btn-primary" id="search-btn" onclick="startSearch()">おすすめを探す →</button>
+  </div>
+
+  <!-- ── 2人モード ── -->
+  <div class="panel" id="panel-duo">
+    <div class="person-grid">
+      <div class="person-card person-a glass">
+        <span class="person-label">Person A</span>
+        <div class="section-title">好きなアニメ</div>
+        <div class="input-row">
+          <div class="input-wrap">
+            <span class="lbl">01</span>
+            <input type="text" id="a1" placeholder="タイトルを入力" />
+          </div>
+          <div class="input-wrap">
+            <span class="lbl">02</span>
+            <input type="text" id="a2" placeholder="2本目（任意）" />
+          </div>
+          <div class="input-wrap">
+            <span class="lbl">03</span>
+            <input type="text" id="a3" placeholder="3本目（任意）" />
+          </div>
+        </div>
+        <div class="section-title">視聴済みタイトル（除外）</div>
+        <div class="exclude-wrap">
+          <textarea id="exclude-a" placeholder="改行またはカンマ区切り"></textarea>
+        </div>
+      </div>
+
+      <div class="person-card person-b glass">
+        <span class="person-label">Person B</span>
+        <div class="section-title">好きなアニメ</div>
+        <div class="input-row">
+          <div class="input-wrap">
+            <span class="lbl">01</span>
+            <input type="text" id="b1" placeholder="タイトルを入力" />
+          </div>
+          <div class="input-wrap">
+            <span class="lbl">02</span>
+            <input type="text" id="b2" placeholder="2本目（任意）" />
+          </div>
+          <div class="input-wrap">
+            <span class="lbl">03</span>
+            <input type="text" id="b3" placeholder="3本目（任意）" />
+          </div>
+        </div>
+        <div class="section-title">視聴済みタイトル（除外）</div>
+        <div class="exclude-wrap">
+          <textarea id="exclude-b" placeholder="改行またはカンマ区切り"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="search-btn-duo" onclick="startSearch()">2人に合う作品を探す →</button>
+  </div>
+
+  <!-- 共通 -->
+  <div id="message"></div>
+  <div class="loader" id="loader">
+    <div class="dots"><span></span><span></span><span></span></div>
+    探しています…
+  </div>
+
+  <div id="results"></div>
+
+</div>
+
+<script>
+  /* =========================================================
+     モード管理
+  ========================================================= */
+  let currentMode = "mood";
+
+  function switchMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll(".tab-btn").forEach((b, i) => {
+      b.classList.toggle("active", (i === 0 && mode === "mood") || (i === 1 && mode === "duo"));
+    });
+    document.getElementById("panel-mood").classList.toggle("active", mode === "mood");
+    document.getElementById("panel-duo").classList.toggle("active",  mode === "duo");
+    clearResults();
+  }
+
+  /* =========================================================
+     チップ選択ロジック
+  ========================================================= */
+  // ジャンルチップ（複数選択）
+  document.querySelectorAll("#genre-chips .chip").forEach(chip => {
+    chip.addEventListener("click", () => chip.classList.toggle("selected"));
+  });
+
+  // 気分チップ（単一選択）
+  document.querySelectorAll("#mood-chips .chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const already = chip.classList.contains("selected");
+      document.querySelectorAll("#mood-chips .chip").forEach(c => c.classList.remove("selected"));
+      if (!already) chip.classList.add("selected");
+    });
+  });
+
+  // 長さチップ（単一選択）
+  document.querySelectorAll("#length-chips .chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll("#length-chips .chip").forEach(c => c.classList.remove("selected"));
+      chip.classList.add("selected");
+    });
+  });
+
+  // 配信サービスチップ（複数選択）
+  document.querySelectorAll("#stream-chips .chip").forEach(chip => {
+    chip.addEventListener("click", () => chip.classList.toggle("selected"));
+  });
+
+  /* =========================================================
+     AniList GraphQL ヘルパー
+  ========================================================= */
+  /* =========================================================
+     略称マップ（入力→検索クエリに変換）
+  ========================================================= */
+  const ALIAS_MAP = {
+    // ── ワンピース ──
+    "ワンピ": "ONE PIECE", "ワンピース": "ONE PIECE",
+    "onepiece": "ONE PIECE",
+
+    // ── 進撃の巨人 ──
+    "進撃": "進撃の巨人", "しんげき": "進撃の巨人",
+    "aot": "Attack on Titan", "snk": "Shingeki no Kyojin",
+
+    // ── 鬼滅の刃 ──
+    "鬼滅": "鬼滅の刃", "きめつ": "鬼滅の刃",
+    "kny": "Kimetsu no Yaiba", "demonslayer": "Demon Slayer",
+
+    // ── 呪術廻戦 ──
+    "呪術": "呪術廻戦", "じゅじゅつ": "呪術廻戦",
+    "jjk": "Jujutsu Kaisen",
+
+    // ── 僕のヒーローアカデミア ──
+    "ヒロアカ": "僕のヒーローアカデミア", "ひろあか": "僕のヒーローアカデミア",
+    "mha": "My Hero Academia", "bnha": "My Hero Academia",
+
+    // ── チェンソーマン ──
+    "チェンソー": "チェンソーマン", "csm": "Chainsaw Man",
+
+    // ── 鋼の錬金術師 ──
+    "鋼": "鋼の錬金術師 FULLMETAL ALCHEMIST",
+    "fma": "Fullmetal Alchemist Brotherhood", "fmab": "Fullmetal Alchemist Brotherhood",
+
+    // ── NARUTO ──
+    "ナルト": "NARUTO", "naruto": "NARUTO",
+    "ボルト": "BORUTO", "boruto": "BORUTO",
+
+    // ── HUNTER×HUNTER ──
+    "ハンター": "HUNTER×HUNTER", "hxh": "Hunter x Hunter",
+
+    // ── エヴァンゲリオン ──
+    "エヴァ": "新世紀エヴァンゲリオン",
+    "eva": "Neon Genesis Evangelion", "nge": "Neon Genesis Evangelion",
+    "エヴァンゲリオン": "新世紀エヴァンゲリオン",
+
+    // ── 名探偵コナン ──
+    "コナン": "名探偵コナン",
+
+    // ── SPY×FAMILY ──
+    "スパイファミ": "SPY×FAMILY", "スパイファミリー": "SPY×FAMILY",
+    "spyfamily": "SPY×FAMILY",
+
+    // ── ドラゴンボール ──
+    "db": "ドラゴンボールZ", "dbz": "ドラゴンボールZ", "dbs": "ドラゴンボール超",
+    "ドラゴンボール超": "Dragon Ball Super",
+
+    // ── BLEACH ──
+    "ブリーチ": "BLEACH",
+
+    // ── 東京リベンジャーズ ──
+    "東リベ": "東京リベンジャーズ", "tokyorev": "Tokyo Revengers",
+
+    // ── ダンジョン飯 ──
+    "ダン飯": "ダンジョン飯", "dunmeshi": "Dungeon Meshi",
+
+    // ── 推しの子 ──
+    "おしの子": "推しの子", "oshinoko": "Oshi no Ko",
+
+    // ── ぼっち・ざ・ろっく ──
+    "ぼっち": "ぼっち・ざ・ろっく", "bocchi": "Bocchi the Rock",
+
+    // ── 葬送のフリーレン ──
+    "フリーレン": "葬送のフリーレン", "frieren": "Frieren Beyond Journey's End",
+
+    // ── ソードアート・オンライン ──
+    "sao": "Sword Art Online", "ソードアート": "Sword Art Online",
+
+    // ── Re:ゼロ ──
+    "リゼロ": "Re:ゼロから始める異世界生活", "rezero": "Re:Zero",
+
+    // ── 転生したらスライムだった件 ──
+    "転スラ": "転生したらスライムだった件", "tensura": "That Time I Got Reincarnated as a Slime",
+    "スライム": "転生したらスライムだった件",
+
+    // ── オーバーロード ──
+    "オバロ": "オーバーロード", "overlord": "Overlord",
+
+    // ── この素晴らしい世界に祝福を！ ──
+    "このすば": "この素晴らしい世界に祝福を！", "konosuba": "KonoSuba",
+
+    // ── やはり俺の青春ラブコメはまちがっている ──
+    "俺ガイル": "やはり俺の青春ラブコメはまちがっている",
+    "はまち": "やはり俺の青春ラブコメはまちがっている",
+    "oregairu": "My Teen Romantic Comedy SNAFU",
+
+    // ── 魔法少女まどか☆マギカ ──
+    "まどマギ": "魔法少女まどか☆マギカ", "まどか": "魔法少女まどか☆マギカ",
+    "madoka": "Puella Magi Madoka Magica",
+
+    // ── 結城友奈は勇者である ──
+    "ゆゆゆ": "結城友奈は勇者である",
+
+    // ── 薬屋のひとりごと ──
+    "薬屋": "薬屋のひとりごと", "くすりや": "薬屋のひとりごと",
+    "apothecary": "The Apothecary Diaries",
+
+    // ── ブルーロック ──
+    "ブルロク": "ブルーロック", "bluelock": "Blue Lock",
+
+    // ── ヴィンランド・サガ ──
+    "ヴィンランド": "ヴィンランド・サガ", "vinland": "Vinland Saga",
+
+    // ── 無職転生 ──
+    "無職転生": "無職転生 〜異世界行ったら本気だす〜",
+    "mushoku": "Mushoku Tensei",
+
+    // ── 盾の勇者の成り上がり ──
+    "盾の勇者": "盾の勇者の成り上がり", "shieldhero": "The Rising of the Shield Hero",
+    "たてのゆうしゃ": "盾の勇者の成り上がり",
+
+    // ── ノーゲーム・ノーライフ ──
+    "ノゲノラ": "ノーゲーム・ノーライフ", "ngnl": "No Game No Life",
+
+    // ── かぐや様は告らせたい ──
+    "かぐや": "かぐや様は告らせたい", "kaguya": "Kaguya-sama Love is War",
+
+    // ── 五等分の花嫁 ──
+    "五等分": "五等分の花嫁", "gotoubun": "The Quintessential Quintuplets",
+
+    // ── リコリス・リコイル ──
+    "リコリコ": "リコリス・リコイル", "lycoris": "Lycoris Recoil",
+
+    // ── ヴァイオレット・エヴァーガーデン ──
+    "ヴァイオレット": "ヴァイオレット・エヴァーガーデン",
+    "veg": "Violet Evergarden", "violet": "Violet Evergarden",
+
+    // ── 小林さんちのメイドラゴン ──
+    "メイドラゴン": "小林さんちのメイドラゴン", "dragonmaid": "Miss Kobayashi's Dragon Maid",
+
+    // ── 青春ブタ野郎 ──
+    "青ブタ": "青春ブタ野郎はバニーガール先輩の夢を見ない",
+    "bunny": "Rascal Does Not Dream of Bunny Girl Senpai",
+
+    // ── 響け！ユーフォニアム ──
+    "ユーフォ": "響け！ユーフォニアム", "euphonium": "Sound Euphonium",
+
+    // ── ちはやふる ──
+    "ちはや": "ちはやふる",
+
+    // ── バクマン ──
+    "バクマン": "バクマン。",
+
+    // ── マッシュル ──
+    "マッシュル": "マッシュル-MASHLE-", "mashle": "MASHLE",
+
+    // ── ダンダダン ──
+    "ダンダダン": "ダンダダン", "dandadan": "DAN DA DAN",
+
+    // ── 怪獣8号 ──
+    "怪獣8号": "怪獣8号", "kaiju8": "Kaiju No. 8",
+
+    // ── 幼女戦記 ──
+    "幼女戦記": "幼女戦記", "youjosenki": "Saga of Tanya the Evil",
+    "タニャ": "幼女戦記",
+
+    // ── ONE PUNCH MAN ──
+    "ワンパン": "ワンパンマン", "opm": "One Punch Man",
+
+    // ── BANANA FISH ──
+    "バナナフィッシュ": "Banana Fish", "bananafish": "Banana Fish",
+
+    // ── 夏目友人帳 ──
+    "夏目": "夏目友人帳", "natsume": "Natsume's Book of Friends",
+
+    // ── 四月は君の嘘 ──
+    "四月は君の嘘": "四月は君の嘘", "shigatsu": "Your Lie in April",
+    "キミウソ": "四月は君の嘘",
+
+    // ── 天気の子 / 君の名は ──
+    "きみのなは": "君の名は。", "kiminonawa": "Your Name",
+    "天気の子": "天気の子", "weatheringwithyou": "Weathering with You",
+
+    // ── 千と千尋 ──
+    "千と千尋": "千と千尋の神隠し", "spiritedaway": "Spirited Away",
+
+    // ── もののけ姫 ──
+    "もののけ": "もののけ姫", "mononoke": "Princess Mononoke",
+
+    // ── ゴールデンカムイ ──
+    "ゴルカム": "ゴールデンカムイ", "goldenkamuy": "Golden Kamuy",
+
+    // ── キングダム ──
+    "キングダム": "キングダム",
+
+    // ── 異世界おじさん ──
+    "異世おじ": "異世界おじさん", "isekaiojisan": "Uncle from Another World",
+  };
+
+  function normalizeTitle(input) {
+    const key = input.trim().toLowerCase().replace(/[\s　・×x]/g, "");
+    return ALIAS_MAP[key] ?? ALIAS_MAP[input.trim().toLowerCase()] ?? input.trim();
+  }
+
+  const ANILIST = "https://graphql.anilist.co";
+
+  async function gql(query, variables = {}) {
+    const res = await fetch(ANILIST, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, variables })
+    });
+    if (!res.ok) throw new Error("AniListへの接続に失敗しました");
+    const json = await res.json();
+    if (json.errors) throw new Error(json.errors[0].message);
+    return json.data;
+  }
+
+  // タイトルで検索してメディア情報（ID+ジャンル）を返す
+  async function searchAnime(title) {
+    const normalized = normalizeTitle(title);
+    const data = await gql(`
+      query ($search: String) {
+        Media(search: $search, type: ANIME) {
+          id
+          genres
+          title { romaji native english }
+        }
+      }
+    `, { search: normalized });
+    return data.Media ?? null;
+  }
+
+  // 配信サービス名の揺れを吸収するマップ
+  const STREAM_ALIAS = {
+    "Netflix":  ["netflix"],
+    "Amazon":   ["amazon", "prime video"],
+    "Disney":   ["disney"],
+    "dAnime":   ["d anime", "danime", "dアニメ"],
+    "Abema":    ["abema", "abematv"],
+    "UNEXT":    ["u-next", "unext"],
+  };
+
+  function hasStreamingService(anime, services) {
+    if (!services.length) return true;
+    const links = (anime.externalLinks ?? [])
+      .filter(l => l.type === "STREAMING")
+      .map(l => l.site.toLowerCase());
+    return services.some(svc =>
+      (STREAM_ALIAS[svc] ?? [svc.toLowerCase()]).some(alias =>
+        links.some(site => site.includes(alias))
+      )
+    );
+  }
+
+  // IDからおすすめ作品を取得
+  async function fetchRecsById(id) {
+    const data = await gql(`
+      query ($id: Int) {
+        Media(id: $id, type: ANIME) {
+          recommendations(sort: RATING_DESC, perPage: 20) {
+            nodes {
+              mediaRecommendation {
+                id
+                title { romaji native english }
+                coverImage { large }
+                description(asHtml: false)
+                episodes
+                format
+                genres
+                averageScore
+                seasonYear
+                externalLinks { site type }
+              }
+            }
+          }
+        }
+      }
+    `, { id });
+    return (data.Media?.recommendations?.nodes ?? [])
+      .map(n => n.mediaRecommendation)
+      .filter(Boolean);
+  }
+
+  // ジャンル＋話数でブラウズ
+  async function browseByGenre({ genres, epLt, epGt, format, formatNot }) {
+    const variables = { genres, sort: ["SCORE_DESC", "POPULARITY_DESC"] };
+    if (epLt)      variables.episodes_lesser  = epLt;
+    if (epGt)      variables.episodes_greater = epGt;
+    if (format)    variables.format    = format;
+    if (formatNot) variables.format_not = formatNot;
+
+    const data = await gql(`
+      query ($genres: [String], $episodes_lesser: Int, $episodes_greater: Int, $format: MediaFormat, $format_not: MediaFormat, $sort: [MediaSort]) {
+        Page(page: 1, perPage: 30) {
+          media(
+            type: ANIME
+            genre_in: $genres
+            episodes_lesser: $episodes_lesser
+            episodes_greater: $episodes_greater
+            format: $format
+            format_not: $format_not
+            sort: $sort
+            status_not: NOT_YET_RELEASED
+          ) {
+            id
+            title { romaji native english }
+            coverImage { large }
+            description(asHtml: false)
+            episodes
+            format
+            genres
+            averageScore
+            seasonYear
+            externalLinks { site type }
+          }
+        }
+      }
+    `, variables);
+    return data.Page?.media ?? [];
+  }
+
+  /* =========================================================
+     ユーティリティ
+  ========================================================= */
+  function parseExclude(text) {
+    return text
+      .split(/[\n,、，]/)
+      .map(s => s.trim().toLowerCase())
+      .filter(Boolean);
+  }
+
+  function isExcluded(anime, excludeList) {
+    if (!excludeList.length) return false;
+    const romaji = (anime.title?.romaji ?? "").toLowerCase();
+    const native = (anime.title?.native ?? "").toLowerCase();
+    return excludeList.some(ex => romaji.includes(ex) || native.includes(ex) || ex.includes(romaji));
+  }
+
+  function stripHtml(str) {
+    return (str ?? "").replace(/<[^>]*>/g, "").replace(/&[a-z]+;/gi, " ").trim();
+  }
+
+  /* =========================================================
+     UI ヘルパー
+  ========================================================= */
+  function showMessage(text, isError = false) {
+    const el = document.getElementById("message");
+    el.textContent = text;
+    el.className = isError ? "error" : "";
+  }
+
+  function setLoading(on) {
+    document.getElementById("loader").classList.toggle("active", on);
+    ["search-btn","search-btn-duo"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.disabled = on;
+    });
+  }
+
+  function clearResults() {
+    showMessage("");
+    const r = document.getElementById("results");
+    r.style.display = "none";
+    r.innerHTML = "";
+  }
+
+  /* =========================================================
+     カード描画
+  ========================================================= */
+  function buildCard(anime, matchLabel = null) {
+    const titleJa  = anime.title?.native  ?? anime.title?.romaji ?? "不明";
+    const titleEn  = anime.title?.english ?? anime.title?.romaji ?? "Unknown";
+    const year     = anime.seasonYear ?? "—";
+    const score    = anime.averageScore ? `★ ${(anime.averageScore / 10).toFixed(1)}` : "";
+    const eps      = anime.episodes ? `${anime.episodes}話` : (anime.format === "MOVIE" ? "映画" : "");
+    const desc     = stripHtml(anime.description) || "あらすじ情報なし";
+    const genres   = (anime.genres ?? []).slice(0, 3);
+    const poster   = anime.coverImage?.large;
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const posterHtml = poster
+      ? `<img src="${poster}" alt="${titleJa}" loading="lazy" />`
+      : `<div class="no-poster">🎌<small>no image</small></div>`;
+
+    const matchHtml = matchLabel
+      ? `<div class="match-badge">🤝 ${matchLabel}</div>`
+      : "";
+
+    card.innerHTML = `
+      ${posterHtml}
+      <div class="card-body">
+        ${matchHtml}
+        <div class="card-title title-ja">${titleJa}</div>
+        <div class="card-title title-en">${titleEn}</div>
+        <div class="card-meta">
+          <span class="card-year">${year}</span>
+          ${eps   ? `<span class="dot">·</span><span class="card-ep">${eps}</span>` : ""}
+          ${score ? `<span class="dot">·</span><span class="card-score">${score}</span>` : ""}
+        </div>
+        <div class="card-genres">${genres.map(g => `<span class="genre-tag">${g}</span>`).join("")}</div>
+        <div class="card-desc">${desc}</div>
+      </div>`;
+    return card;
+  }
+
+  function renderSection(container, label, animes, matchLabel = null) {
+    if (!animes.length) return;
+    const sec = document.createElement("div");
+    sec.className = "result-section";
+
+    const lbl = document.createElement("div");
+    lbl.className = "section-label-result";
+    lbl.textContent = label;
+    sec.appendChild(lbl);
+
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    animes.forEach(a => grid.appendChild(buildCard(a, matchLabel)));
+    sec.appendChild(grid);
+    container.appendChild(sec);
+  }
+
+  /* =========================================================
+     メイン検索
+  ========================================================= */
+  async function startSearch() {
+    clearResults();
+    setLoading(true);
+
+    try {
+      if (currentMode === "mood") {
+        await searchMood();
+      } else {
+        await searchDuo();
+      }
+    } catch (err) {
+      showMessage(err.message || "エラーが発生しました。", true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /* ── 気分モード ── */
+  async function searchMood() {
+    // 選択ジャンル
+    const genres = [...document.querySelectorAll("#genre-chips .chip.selected")]
+      .map(c => c.dataset.val);
+
+    // 気分チップのジャンルを追加
+    const moodChip = document.querySelector("#mood-chips .chip.selected");
+    if (moodChip) {
+      moodChip.dataset.genres.split(",").forEach(g => {
+        if (!genres.includes(g)) genres.push(g);
+      });
+    }
+
+    if (!genres.length) {
+      showMessage("ジャンルか気分を少なくとも1つ選んでください。", true);
+      return;
+    }
+
+    // 長さ
+    const lenVal = document.querySelector("#length-chips .chip.selected")?.dataset.len ?? "any";
+    let epLt, epGt, format, formatNot;
+    if (lenVal === "short")  { epLt = 14; formatNot = "MOVIE"; }
+    if (lenVal === "medium") { epGt = 13; epLt = 27; formatNot = "MOVIE"; }
+    if (lenVal === "long")   { epGt = 26; formatNot = "MOVIE"; }
+    if (lenVal === "movie")  { format = "MOVIE"; }
+
+    // 配信サービス
+    const streams = [...document.querySelectorAll("#stream-chips .chip.selected")]
+      .map(c => c.dataset.val);
+
+    // 除外リスト
+    const exclude = parseExclude(document.getElementById("exclude-mood").value);
+
+    showMessage("AniListを検索中…");
+    let results = await browseByGenre({ genres, epLt, epGt, format, formatNot });
+
+    // 除外・配信フィルター
+    results = results
+      .filter(a => !isExcluded(a, exclude))
+      .filter(a => hasStreamingService(a, streams))
+      .slice(0, 24);
+
+    if (!results.length) {
+      showMessage("条件に合う作品が見つかりませんでした。条件を変えて試してください。");
+      return;
+    }
+
+    showMessage("");
+    const container = document.getElementById("results");
+    container.style.display = "block";
+
+    // ヘッダー
+    const hdr = document.createElement("div");
+    hdr.className = "results-header";
+    hdr.innerHTML = `<h2>おすすめアニメ</h2><span class="count-pill">${results.length} 件</span>`;
+    container.appendChild(hdr);
+
+    renderSection(container, `選択ジャンルのおすすめ（スコア順）`, results);
+  }
+
+  /* ── 2人モード ── */
+  async function searchDuo() {
+    const aTitles = ["a1","a2","a3"].map(id => document.getElementById(id).value.trim()).filter(Boolean);
+    const bTitles = ["b1","b2","b3"].map(id => document.getElementById(id).value.trim()).filter(Boolean);
+
+    if (!aTitles.length || !bTitles.length) {
+      showMessage("AさんとBさん、両方に少なくとも1本入力してください。", true);
+      return;
+    }
+
+    const excludeA = parseExclude(document.getElementById("exclude-a").value);
+    const excludeB = parseExclude(document.getElementById("exclude-b").value);
+    const allExclude = [...new Set([...excludeA, ...excludeB])];
+
+    showMessage("AさんとBさんの好みを分析中…");
+
+    // 各タイトルをIDに変換
+    const resolve = async (titles) => {
+      const results = [];
+      for (const t of titles) {
+        const m = await searchAnime(t);
+        if (m) results.push(m);
+      }
+      return results;
+    };
+
+    const [aMedia, bMedia] = await Promise.all([resolve(aTitles), resolve(bTitles)]);
+
+    if (!aMedia.length) { showMessage(`Aさんのアニメが見つかりません。タイトルを確認してください。`, true); return; }
+    if (!bMedia.length) { showMessage(`Bさんのアニメが見つかりません。タイトルを確認してください。`, true); return; }
+
+    // ジャンル集計
+    const genreCount = (mediaList) => {
+      const count = {};
+      mediaList.forEach(m => (m.genres ?? []).forEach(g => { count[g] = (count[g] ?? 0) + 1; }));
+      return count;
+    };
+
+    const aCount = genreCount(aMedia);
+    const bCount = genreCount(bMedia);
+
+    // 共通ジャンル（両方が持つもの）
+    const commonGenres = Object.keys(aCount).filter(g => bCount[g]);
+
+    // 共通ジャンルがなければ全ジャンルの和
+    const genresToSearch = commonGenres.length > 0
+      ? commonGenres
+      : [...new Set([...Object.keys(aCount), ...Object.keys(bCount)])];
+
+    showMessage("2人に合う作品を探しています…");
+
+    // おすすめをID両方から取得してマージ
+    const aIds = aMedia.map(m => m.id);
+    const bIds = bMedia.map(m => m.id);
+
+    const [aRecs, bRecs] = await Promise.all([
+      Promise.all(aIds.map(fetchRecsById)),
+      Promise.all(bIds.map(fetchRecsById)),
+    ]);
+
+    const flatten = (arr) => arr.flat();
+    const toMap   = (arr) => {
+      const m = new Map();
+      arr.forEach(a => { if (!m.has(a.id)) m.set(a.id, a); });
+      return m;
+    };
+
+    const aMap = toMap(flatten(aRecs));
+    const bMap = toMap(flatten(bRecs));
+
+    // 配信サービスフィルター（2人モードでも共有）
+    const streams = [...document.querySelectorAll("#stream-chips .chip.selected")]
+      .map(c => c.dataset.val);
+
+    // 両方のおすすめに登場する作品（被り）
+    const overlap = [...aMap.entries()]
+      .filter(([id]) => bMap.has(id))
+      .map(([, anime]) => anime)
+      .filter(a => !isExcluded(a, allExclude))
+      .filter(a => hasStreamingService(a, streams));
+
+    // 片方だけのおすすめ（除外済み）
+    const aOnly = [...aMap.values()]
+      .filter(a => !bMap.has(a.id) && !isExcluded(a, allExclude))
+      .filter(a => hasStreamingService(a, streams))
+      .slice(0, 8);
+    const bOnly = [...bMap.values()]
+      .filter(a => !aMap.has(a.id) && !isExcluded(a, allExclude))
+      .filter(a => hasStreamingService(a, streams))
+      .slice(0, 8);
+
+    showMessage("");
+    const container = document.getElementById("results");
+    container.style.display = "block";
+
+    const totalCount = overlap.length + aOnly.length + bOnly.length;
+
+    const hdr = document.createElement("div");
+    hdr.className = "results-header";
+    hdr.innerHTML = `<h2>2人のおすすめ</h2><span class="count-pill">${totalCount} 件</span>`;
+    container.appendChild(hdr);
+
+    if (overlap.length) {
+      renderSection(container, `🤝 2人ともハマりそう（${overlap.length}件）`, overlap.slice(0, 12), "A・B共通");
+    }
+    if (aOnly.length) {
+      renderSection(container, `💙 Aさんが好きそう`, aOnly);
+    }
+    if (bOnly.length) {
+      renderSection(container, `💗 Bさんが好きそう`, bOnly);
+    }
+
+    if (!totalCount) {
+      showMessage("おすすめが見つかりませんでした。別のタイトルを試してください。");
+    }
+  }
+
+  /* =========================================================
+     Enter キーで検索
+  ========================================================= */
+  /* =========================================================
+     言語切替
+  ========================================================= */
+  function setLang(lang) {
+    document.body.classList.toggle("lang-en", lang === "en");
+    document.getElementById("lang-ja").classList.toggle("active", lang === "ja");
+    document.getElementById("lang-en").classList.toggle("active", lang === "en");
+  }
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "Enter" && e.target.tagName !== "TEXTAREA") startSearch();
+  });
+</script>
+</body>
+</html>
