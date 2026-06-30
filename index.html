@@ -511,6 +511,31 @@
       overflow: hidden;
     }
 
+    /* ── サービスリンク ── */
+    .card-links {
+      display: flex;
+      gap: 0.35rem;
+      margin-top: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .svc-link {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 5px;
+      text-decoration: none;
+      opacity: 0.75;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+
+    .svc-link:hover { opacity: 1; }
+
+    .svc-link.danime { background: rgba(255,80,0,0.15);  color: #ff6b35; border: 1px solid rgba(255,80,0,0.3); }
+    .svc-link.unext  { background: rgba(0,120,255,0.12); color: #60a5fa; border: 1px solid rgba(0,120,255,0.3); }
+    .svc-link.abema  { background: rgba(0,200,100,0.12); color: #34d399; border: 1px solid rgba(0,200,100,0.3); }
+
     /* match badge for 2人モード */
     .match-badge {
       display: inline-block;
@@ -645,11 +670,8 @@
         <span class="chip" data-val="Netflix">Netflix</span>
         <span class="chip" data-val="Amazon">Prime Video</span>
         <span class="chip" data-val="Disney">Disney+</span>
-        <span class="chip chip-beta" data-val="dAnime">dアニメ <span class="beta">β</span></span>
-        <span class="chip chip-beta" data-val="Abema">AbemaTV <span class="beta">β</span></span>
-        <span class="chip chip-beta" data-val="UNEXT">U-NEXT <span class="beta">β</span></span>
       </div>
-      <div class="hint" style="margin-bottom:1.2rem">β付きは登録データが少なく、実際に配信中でもヒットしない場合があります</div>
+      <div class="hint" style="margin-bottom:1.2rem">各カードに dアニメ・U-NEXT・Abema の検索リンクを表示します</div>
 
       <div class="section-title">視聴済み・除外したいタイトル（任意）</div>
       <div class="exclude-wrap">
@@ -1162,6 +1184,9 @@
       ? `<div class="match-badge">🤝 ${matchLabel}</div>`
       : "";
 
+    const searchJa = encodeURIComponent(titleJa);
+    const searchEn = encodeURIComponent(titleEn);
+
     card.innerHTML = `
       ${posterHtml}
       <div class="card-body">
@@ -1175,6 +1200,11 @@
         </div>
         <div class="card-genres">${genres.map(g => `<span class="genre-tag">${g}</span>`).join("")}</div>
         <div class="card-desc">${desc}</div>
+        <div class="card-links">
+          <a class="svc-link danime" href="https://animestore.docomo.ne.jp/animestore/sch_pc?searchKey=${searchJa}" target="_blank" rel="noopener">dアニメ</a>
+          <a class="svc-link unext"  href="https://video.unext.jp/search?query=${searchJa}" target="_blank" rel="noopener">U-NEXT</a>
+          <a class="svc-link abema"  href="https://abema.tv/search?q=${searchEn}" target="_blank" rel="noopener">Abema</a>
+        </div>
       </div>`;
     return card;
   }
