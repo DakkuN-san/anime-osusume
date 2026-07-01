@@ -422,6 +422,53 @@
 
     @media (max-width: 400px) { .grid { grid-template-columns: repeat(2, 1fr); } }
 
+    /* ── リセットボタン ── */
+    .btn-reset {
+      width: 100%;
+      padding: 0.7rem;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      background: transparent;
+      color: #4b5563;
+      font-size: 0.88rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 0.6rem;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-reset:hover { color: #9ca3af; border-color: rgba(255,255,255,0.15); }
+
+    /* ── もっと見るボタン ── */
+    .btn-more {
+      display: block;
+      margin: 1.5rem auto 0;
+      padding: 0.75rem 2.5rem;
+      border: 1px solid rgba(109,40,217,0.4);
+      border-radius: 12px;
+      background: rgba(109,40,217,0.1);
+      color: #a78bfa;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-more:hover { background: rgba(109,40,217,0.2); border-color: rgba(109,40,217,0.6); }
+    .btn-more:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── カードクリック ── */
+    .card { cursor: pointer; }
+
+    /* ── スマホのヘッダー縮小 ── */
+    @media (max-width: 480px) {
+      .page { padding-top: 1.5rem; }
+      header { margin-bottom: 1.5rem; }
+      h1 { font-size: 1.6rem; }
+      .subtitle { font-size: 0.85rem; }
+      .glass { padding: 1.2rem 1rem; }
+    }
+
     /* ── アニメカード ── */
     .card {
       background: rgba(255,255,255,0.03);
@@ -429,7 +476,7 @@
       border-radius: 13px;
       overflow: hidden;
       transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
-      cursor: default;
+      cursor: pointer;
     }
     .card:hover {
       transform: translateY(-5px) scale(1.02);
@@ -681,6 +728,7 @@
     </div>
 
     <button class="btn-primary" id="search-btn" onclick="startSearch()">おすすめを探す →</button>
+    <button class="btn-reset" onclick="resetAll()">条件をリセット</button>
   </div>
 
   <!-- ── 2人モード ── -->
@@ -734,6 +782,7 @@
     </div>
 
     <button class="btn-primary" id="search-btn-duo" onclick="startSearch()">2人に合う作品を探す →</button>
+    <button class="btn-reset" onclick="resetAll()">条件をリセット</button>
   </div>
 
   <!-- 共通 -->
@@ -1077,17 +1126,23 @@
       .filter(Boolean);
   }
 
+  // ページネーション状態
+  let _moodParams = null;
+  let _moodPage   = 1;
+  let _moodExclude = [];
+  let _moodStreams = [];
+
   // ジャンル＋話数でブラウズ
-  async function browseByGenre({ genres, epLt, epGt, format, formatNot }) {
-    const variables = { genres, sort: ["SCORE_DESC", "POPULARITY_DESC"] };
+  async function browseByGenre({ genres, epLt, epGt, format, formatNot, page = 1 }) {
+    const variables = { genres, sort: ["SCORE_DESC", "POPULARITY_DESC"], page };
     if (epLt)      variables.episodes_lesser  = epLt;
     if (epGt)      variables.episodes_greater = epGt;
     if (format)    variables.format    = format;
     if (formatNot) variables.format_not = formatNot;
 
     const data = await gql(`
-      query ($genres: [String], $episodes_lesser: Int, $episodes_greater: Int, $format: MediaFormat, $format_not: MediaFormat, $sort: [MediaSort]) {
-        Page(page: 1, perPage: 30) {
+      query ($genres: [String], $episodes_lesser: Int, $episodes_greater: Int, $format: MediaFormat, $format_not: MediaFormat, $sort: [MediaSort], $page: Int) {
+        Page(page: $page, perPage: 24) {
           media(
             type: ANIME
             genre_in: $genres
@@ -1160,6 +1215,25 @@
     r.innerHTML = "";
   }
 
+  function resetAll() {
+    document.querySelectorAll(".chip.selected").forEach(c => c.classList.remove("selected"));
+    document.querySelector("#length-chips .chip[data-len='any']").classList.add("selected");
+    ["exclude-mood","exclude-a","exclude-b","a1","a2","a3","b1","b2","b3"]
+      .forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
+    clearResults();
+  }
+
+  function showEmptyState(msg, tip) {
+    const r = document.getElementById("results");
+    r.style.display = "block";
+    r.innerHTML = `
+      <div style="text-align:center;padding:2.5rem 1rem;color:#4b5563">
+        <div style="font-size:2.5rem;margin-bottom:0.8rem">🔍</div>
+        <p style="font-size:0.92rem;margin-bottom:0.5rem;color:#6b7280">${msg}</p>
+        ${tip ? `<p style="font-size:0.8rem">${tip}</p>` : ""}
+      </div>`;
+  }
+
   /* =========================================================
      カード描画
   ========================================================= */
@@ -1186,6 +1260,12 @@
 
     const searchJa = encodeURIComponent(titleJa);
     const searchEn = encodeURIComponent(titleEn);
+
+    card.dataset.anilistId = anime.id;
+    card.addEventListener("click", (e) => {
+      if (e.target.closest(".svc-link")) return;
+      window.open(`https://anilist.co/anime/${anime.id}`, "_blank", "noopener");
+    });
 
     card.innerHTML = `
       ${posterHtml}
@@ -1246,12 +1326,10 @@
   }
 
   /* ── 気分モード ── */
-  async function searchMood() {
-    // 選択ジャンル
+  async function searchMood(page = 1) {
     const genres = [...document.querySelectorAll("#genre-chips .chip.selected")]
       .map(c => c.dataset.val);
 
-    // 気分チップのジャンルを追加
     const moodChip = document.querySelector("#mood-chips .chip.selected");
     if (moodChip) {
       moodChip.dataset.genres.split(",").forEach(g => {
@@ -1264,7 +1342,6 @@
       return;
     }
 
-    // 長さ
     const lenVal = document.querySelector("#length-chips .chip.selected")?.dataset.len ?? "any";
     let epLt, epGt, format, formatNot;
     if (lenVal === "short")  { epLt = 14; formatNot = "MOVIE"; }
@@ -1272,38 +1349,83 @@
     if (lenVal === "long")   { epGt = 26; formatNot = "MOVIE"; }
     if (lenVal === "movie")  { format = "MOVIE"; }
 
-    // 配信サービス
     const streams = [...document.querySelectorAll("#stream-chips .chip.selected")]
       .map(c => c.dataset.val);
-
-    // 除外リスト
     const exclude = parseExclude(document.getElementById("exclude-mood").value);
 
+    // ページ1のとき状態を保存
+    if (page === 1) {
+      _moodParams  = { genres, epLt, epGt, format, formatNot };
+      _moodPage    = 1;
+      _moodExclude = exclude;
+      _moodStreams  = streams;
+    }
+
     showMessage("AniListを検索中…");
-    let results = await browseByGenre({ genres, epLt, epGt, format, formatNot });
+    let results = await browseByGenre({ ..._moodParams, page });
 
-    // 除外・配信フィルター
     results = results
-      .filter(a => !isExcluded(a, exclude))
-      .filter(a => hasStreamingService(a, streams))
-      .slice(0, 24);
+      .filter(a => !isExcluded(a, _moodExclude))
+      .filter(a => hasStreamingService(a, _moodStreams));
 
-    if (!results.length) {
-      showMessage("条件に合う作品が見つかりませんでした。条件を変えて試してください。");
+    if (!results.length && page === 1) {
+      showEmptyState(
+        "条件に合う作品が見つかりませんでした。",
+        "ジャンルを増やす・話数条件を変えるなど条件を広げてみてください。"
+      );
+      showMessage("");
       return;
     }
 
     showMessage("");
     const container = document.getElementById("results");
-    container.style.display = "block";
 
-    // ヘッダー
-    const hdr = document.createElement("div");
-    hdr.className = "results-header";
-    hdr.innerHTML = `<h2>おすすめアニメ</h2><span class="count-pill">${results.length} 件</span>`;
-    container.appendChild(hdr);
+    if (page === 1) {
+      container.innerHTML = "";
+      container.style.display = "block";
+      const hdr = document.createElement("div");
+      hdr.className = "results-header";
+      hdr.innerHTML = `<h2>おすすめアニメ</h2><span class="count-pill" id="result-count">${results.length} 件</span>`;
+      container.appendChild(hdr);
+    } else {
+      // カウント更新
+      const pill = document.getElementById("result-count");
+      if (pill) pill.textContent = `${document.querySelectorAll(".card").length + results.length} 件`;
+      // 既存のもっと見るボタンを削除
+      document.getElementById("load-more-btn")?.remove();
+    }
 
-    renderSection(container, `選択ジャンルのおすすめ（スコア順）`, results);
+    const section = document.querySelector(".result-section") ?? (() => {
+      const s = document.createElement("div");
+      s.className = "result-section";
+      const lbl = document.createElement("div");
+      lbl.className = "section-label-result";
+      lbl.textContent = "選択ジャンルのおすすめ（スコア順）";
+      s.appendChild(lbl);
+      const g = document.createElement("div");
+      g.className = "grid";
+      s.appendChild(g);
+      container.appendChild(s);
+      return s;
+    })();
+
+    const grid = section.querySelector(".grid");
+    results.forEach(a => grid.appendChild(buildCard(a)));
+
+    // もっと見るボタン
+    if (results.length === 24) {
+      const btn = document.createElement("button");
+      btn.id = "load-more-btn";
+      btn.className = "btn-more";
+      btn.textContent = "もっと見る";
+      btn.onclick = async () => {
+        btn.disabled = true;
+        btn.textContent = "読み込み中…";
+        _moodPage++;
+        await searchMood(_moodPage);
+      };
+      container.appendChild(btn);
+    }
   }
 
   /* ── 2人モード ── */
@@ -1419,7 +1541,10 @@
     }
 
     if (!totalCount) {
-      showMessage("おすすめが見つかりませんでした。別のタイトルを試してください。");
+      showEmptyState(
+        "2人に合う作品が見つかりませんでした。",
+        "別のタイトルを入力するか、視聴済みリストを減らして試してください。"
+      );
     }
   }
 
