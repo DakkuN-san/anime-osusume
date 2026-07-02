@@ -558,30 +558,138 @@
       overflow: hidden;
     }
 
-    /* ── サービスリンク ── */
-    .card-links {
+    /* ── 配信モーダル ── */
+    #stream-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,0.72);
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    #stream-modal.open { display: flex; }
+
+    .modal-box {
+      background: #111122;
+      border: 0.5px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 360px;
+      overflow: hidden;
+    }
+
+    .modal-header {
       display: flex;
-      gap: 0.35rem;
-      margin-top: 0.6rem;
-      flex-wrap: wrap;
+      gap: 12px;
+      padding: 14px 14px 12px;
+      border-bottom: 0.5px solid rgba(255,255,255,0.08);
     }
 
-    .svc-link {
-      font-size: 0.65rem;
-      font-weight: 600;
-      padding: 0.2rem 0.5rem;
-      border-radius: 5px;
+    .modal-poster {
+      width: 56px;
+      height: 80px;
+      border-radius: 6px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #1a0a3a;
+    }
+
+    .modal-poster-placeholder {
+      width: 56px;
+      height: 80px;
+      border-radius: 6px;
+      background: #1a0a3a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .modal-title-ja { font-size: 14px; font-weight: 600; color: #e8e8f0; margin-bottom: 3px; }
+    .modal-title-en { font-size: 11px; color: #6b7280; margin-bottom: 8px; }
+
+    .modal-genres { display: flex; flex-wrap: wrap; gap: 4px; }
+    .modal-genre-tag {
+      font-size: 10px;
+      background: rgba(109,40,217,0.2);
+      color: #a78bfa;
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #4b5563;
+      font-size: 18px;
+      line-height: 1;
+      align-self: flex-start;
+      flex-shrink: 0;
+      margin-left: auto;
+      padding: 0;
+    }
+    .modal-close:hover { color: #9ca3af; }
+
+    .modal-body { padding: 14px; }
+
+    .modal-section-label {
+      font-size: 10px;
+      color: #4b5563;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .modal-stream-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: left;
       text-decoration: none;
-      opacity: 0.75;
+      margin-bottom: 7px;
       transition: opacity 0.15s;
-      white-space: nowrap;
+    }
+    .modal-stream-btn:last-child { margin-bottom: 0; }
+    .modal-stream-btn:hover { opacity: 0.85; }
+    .modal-stream-btn .btn-icon { font-size: 15px; }
+
+    .modal-stream-btn.netflix  { background: #E50914; color: #fff; }
+    .modal-stream-btn.prime    { background: #00A8E0; color: #fff; }
+    .modal-stream-btn.disney   { background: #113CCF; color: #fff; }
+
+    .modal-divider {
+      border: none;
+      border-top: 0.5px solid rgba(255,255,255,0.07);
+      margin: 12px 0 10px;
     }
 
-    .svc-link:hover { opacity: 1; }
+    .modal-search-row { display: flex; gap: 6px; }
 
-    .svc-link.danime { background: rgba(255,80,0,0.15);  color: #ff6b35; border: 1px solid rgba(255,80,0,0.3); }
-    .svc-link.unext  { background: rgba(0,120,255,0.12); color: #60a5fa; border: 1px solid rgba(0,120,255,0.3); }
-    .svc-link.abema  { background: rgba(0,200,100,0.12); color: #34d399; border: 1px solid rgba(0,200,100,0.3); }
+    .modal-search-btn {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 0.5px solid rgba(255,255,255,0.1);
+      border-radius: 7px;
+      padding: 8px 10px;
+      cursor: pointer;
+      color: #9ca3af;
+      font-size: 12px;
+      text-decoration: none;
+      text-align: center;
+      transition: background 0.15s;
+    }
+    .modal-search-btn:hover { background: rgba(255,255,255,0.1); }
 
     /* match badge for 2人モード */
     .match-badge {
@@ -1262,10 +1370,7 @@
     const searchEn = encodeURIComponent(titleEn);
 
     card.dataset.anilistId = anime.id;
-    card.addEventListener("click", (e) => {
-      if (e.target.closest(".svc-link")) return;
-      window.open(`https://anilist.co/anime/${anime.id}`, "_blank", "noopener");
-    });
+    card.addEventListener("click", () => openStreamModal(anime));
 
     card.innerHTML = `
       ${posterHtml}
@@ -1280,10 +1385,6 @@
         </div>
         <div class="card-genres">${genres.map(g => `<span class="genre-tag">${g}</span>`).join("")}</div>
         <div class="card-desc">${desc}</div>
-        <div class="card-links">
-          <a class="svc-link danime" href="https://animestore.docomo.ne.jp/animestore/sch_pc?searchKey=${searchJa}" target="_blank" rel="noopener">dアニメ</a>
-          <a class="svc-link unext"  href="https://video.unext.jp/freeword?query=${searchJa}" target="_blank" rel="noopener">U-NEXT</a>
-        </div>
       </div>`;
     return card;
   }
@@ -1561,8 +1662,79 @@
   }
 
   document.addEventListener("keydown", e => {
+    if (e.key === "Escape") closeStreamModal();
     if (e.key === "Enter" && e.target.tagName !== "TEXTAREA") startSearch();
   });
+
+  /* =========================================================
+     配信モーダル
+  ========================================================= */
+  const STREAM_DIRECT = {
+    netflix: { label: "Netflixで視聴",      cls: "netflix", keywords: ["netflix"] },
+    prime:   { label: "Prime Videoで視聴",  cls: "prime",   keywords: ["amazon", "prime video"] },
+    disney:  { label: "Disney+で視聴",      cls: "disney",  keywords: ["disney"] },
+  };
+
+  function openStreamModal(anime) {
+    const titleJa = anime.title?.native  ?? anime.title?.romaji ?? "不明";
+    const titleEn = anime.title?.english ?? anime.title?.romaji ?? "Unknown";
+    const genres  = (anime.genres ?? []).slice(0, 3);
+    const poster  = anime.coverImage?.large;
+    const searchJa = encodeURIComponent(titleJa);
+
+    const streamLinks = (anime.externalLinks ?? [])
+      .filter(l => l.type === "STREAMING")
+      .map(l => ({ site: l.site.toLowerCase(), url: l.url }));
+
+    const directBtns = Object.values(STREAM_DIRECT).map(({ label, cls, keywords }) => {
+      const match = streamLinks.find(l => keywords.some(k => l.site.includes(k)));
+      if (!match || !match.url) return "";
+      return `<a class="modal-stream-btn ${cls}" href="${match.url}" target="_blank" rel="noopener">
+        <span class="btn-icon">▶</span>${label}
+      </a>`;
+    }).join("");
+
+    const posterHtml = poster
+      ? `<img class="modal-poster" src="${poster}" alt="${titleJa}" />`
+      : `<div class="modal-poster-placeholder">🎌</div>`;
+
+    const genreHtml = genres.map(g => `<span class="modal-genre-tag">${g}</span>`).join("");
+
+    document.getElementById("stream-modal").innerHTML = `
+      <div class="modal-box" id="modal-box">
+        <div class="modal-header">
+          ${posterHtml}
+          <div style="flex:1;min-width:0">
+            <div class="modal-title-ja">${titleJa}</div>
+            <div class="modal-title-en">${titleEn}</div>
+            <div class="modal-genres">${genreHtml}</div>
+          </div>
+          <button class="modal-close" onclick="closeStreamModal()">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-section-label">どこで見る？</div>
+          ${directBtns || ""}
+          <hr class="modal-divider" />
+          <div class="modal-section-label">検索して探す</div>
+          <div class="modal-search-row">
+            <a class="modal-search-btn" href="https://animestore.docomo.ne.jp/animestore/sch_pc?searchKey=${searchJa}" target="_blank" rel="noopener">dアニメ</a>
+            <a class="modal-search-btn" href="https://video.unext.jp/freeword?query=${searchJa}" target="_blank" rel="noopener">U-NEXT</a>
+          </div>
+        </div>
+      </div>`;
+
+    document.getElementById("stream-modal").classList.add("open");
+  }
+
+  function closeStreamModal() {
+    document.getElementById("stream-modal").classList.remove("open");
+  }
+
+  document.getElementById("stream-modal").addEventListener("click", e => {
+    if (!e.target.closest("#modal-box")) closeStreamModal();
+  });
 </script>
+
+<div id="stream-modal" role="dialog" aria-modal="true"></div>
 </body>
 </html>
