@@ -1300,6 +1300,40 @@
   }
 
   /* =========================================================
+     ジャンル日本語化
+  ========================================================= */
+  const GENRE_JA = {
+    "Action": "アクション", "Adventure": "冒険", "Comedy": "コメディ",
+    "Drama": "ドラマ", "Ecchi": "エッチ", "Fantasy": "ファンタジー",
+    "Horror": "ホラー", "Mahou Shoujo": "魔法少女", "Mecha": "メカ",
+    "Music": "音楽", "Mystery": "ミステリー", "Psychological": "心理",
+    "Romance": "ロマンス", "Sci-Fi": "SF", "Slice of Life": "日常",
+    "Sports": "スポーツ", "Supernatural": "超自然", "Thriller": "スリラー",
+    "Hentai": "成人向け",
+  };
+  function jaGenre(g) { return GENRE_JA[g] ?? g; }
+
+  /* =========================================================
+     あらすじ翻訳（Google Translate 非公式 / キャッシュ付き）
+  ========================================================= */
+  const _descCache = new Map();
+
+  async function translateDesc(text) {
+    if (!text || text === "あらすじ情報なし") return text;
+    if (_descCache.has(text)) return _descCache.get(text);
+    try {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ja&dt=t&q=${encodeURIComponent(text.slice(0, 500))}`;
+      const res = await fetch(url);
+      const json = await res.json();
+      const translated = json[0].map(s => s[0]).join("");
+      _descCache.set(text, translated);
+      return translated;
+    } catch {
+      return text;
+    }
+  }
+
+  /* =========================================================
      UI ヘルパー
   ========================================================= */
   function showMessage(text, isError = false) {
@@ -1345,13 +1379,14 @@
   /* =========================================================
      カード描画
   ========================================================= */
-  function buildCard(anime, matchLabel = null) {
+  async function buildCard(anime, matchLabel = null) {
     const titleJa  = anime.title?.native  ?? anime.title?.romaji ?? "不明";
     const titleEn  = anime.title?.english ?? anime.title?.romaji ?? "Unknown";
     const year     = anime.seasonYear ?? "—";
     const score    = anime.averageScore ? `★ ${(anime.averageScore / 10).toFixed(1)}` : "";
     const eps      = anime.episodes ? `${anime.episodes}話` : (anime.format === "MOVIE" ? "映画" : "");
-    const desc     = stripHtml(anime.description) || "あらすじ情報なし";
+    const rawDesc  = stripHtml(anime.description) || "あらすじ情報なし";
+    const desc     = await translateDesc(rawDesc);
     const genres   = (anime.genres ?? []).slice(0, 3);
     const poster   = anime.coverImage?.large;
 
@@ -1365,9 +1400,6 @@
     const matchHtml = matchLabel
       ? `<div class="match-badge">🤝 ${matchLabel}</div>`
       : "";
-
-    const searchJa = encodeURIComponent(titleJa);
-    const searchEn = encodeURIComponent(titleEn);
 
     card.dataset.anilistId = anime.id;
     card.addEventListener("click", () => openStreamModal(anime));
@@ -1383,13 +1415,13 @@
           ${eps   ? `<span class="dot">·</span><span class="card-ep">${eps}</span>` : ""}
           ${score ? `<span class="dot">·</span><span class="card-score">${score}</span>` : ""}
         </div>
-        <div class="card-genres">${genres.map(g => `<span class="genre-tag">${g}</span>`).join("")}</div>
+        <div class="card-genres">${genres.map(g => `<span class="genre-tag">${jaGenre(g)}</span>`).join("")}</div>
         <div class="card-desc">${desc}</div>
       </div>`;
     return card;
   }
 
-  function renderSection(container, label, animes, matchLabel = null) {
+  async function renderSection(container, label, animes, matchLabel = null) {
     if (!animes.length) return;
     const sec = document.createElement("div");
     sec.className = "result-section";
@@ -1401,7 +1433,8 @@
 
     const grid = document.createElement("div");
     grid.className = "grid";
-    animes.forEach(a => grid.appendChild(buildCard(a, matchLabel)));
+    const cards = await Promise.all(animes.map(a => buildCard(a, matchLabel)));
+    cards.forEach(c => grid.appendChild(c));
     sec.appendChild(grid);
     container.appendChild(sec);
   }
@@ -1511,7 +1544,8 @@
     })();
 
     const grid = section.querySelector(".grid");
-    results.forEach(a => grid.appendChild(buildCard(a)));
+    const cards = await Promise.all(results.map(a => buildCard(a)));
+    cards.forEach(c => grid.appendChild(c));
 
     // もっと見るボタン
     if (results.length === 24) {
@@ -1632,13 +1666,13 @@
     container.appendChild(hdr);
 
     if (overlap.length) {
-      renderSection(container, `🤝 2人ともハマりそう（${overlap.length}件）`, overlap.slice(0, 12), "A・B共通");
+      await renderSection(container, `🤝 2人ともハマりそう（${overlap.length}件）`, overlap.slice(0, 12), "A・B共通");
     }
     if (aOnly.length) {
-      renderSection(container, `💙 Aさんが好きそう`, aOnly);
+      await renderSection(container, `💙 Aさんが好きそう`, aOnly);
     }
     if (bOnly.length) {
-      renderSection(container, `💗 Bさんが好きそう`, bOnly);
+      await renderSection(container, `💗 Bさんが好きそう`, bOnly);
     }
 
     if (!totalCount) {
