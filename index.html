@@ -51,6 +51,9 @@
   }
   </script>
 
+  <!-- Google AdSense（審査通過後に ca-pub-XXXXXXXXXX を実際のIDに差し替え） -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXX" crossorigin="anonymous"></script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -1028,6 +1031,29 @@
 
   <div id="results"></div>
 
+  <!-- 結果下の広告（AdSense審査通過後に data-ad-client / data-ad-slot を差し替え） -->
+  <div id="ad-results" style="margin-top:2rem;display:none">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXX"
+         data-ad-slot="YYYYYYYYYY"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+
+  <!-- Amazonアフィリエイトバナー（承認後に associates-tag を差し替え） -->
+  <div id="amazon-banner" style="display:none;margin-top:2rem;padding:1.25rem;background:rgba(255,153,0,0.07);border:1px solid rgba(255,153,0,0.2);border-radius:12px;text-align:center">
+    <p style="font-size:0.75rem;color:#9ca3af;margin-bottom:0.6rem">Amazon でアニメのBlu-ray・グッズを探す</p>
+    <a id="amazon-link"
+       href="https://www.amazon.co.jp/s?k=%E3%82%A2%E3%83%8B%E3%83%A1+Blu-ray&tag=ASSOCIATES-TAG"
+       target="_blank" rel="noopener sponsored"
+       style="display:inline-block;background:#FF9900;color:#000;font-size:0.8rem;font-weight:700;padding:0.5rem 1.4rem;border-radius:999px;text-decoration:none">
+      🛒 Amazonで探す
+    </a>
+    <p style="font-size:0.65rem;color:#6b7280;margin-top:0.5rem">※ リンク経由でご購入いただくと運営の支援になります</p>
+  </div>
+
 </div>
 
 <script>
@@ -1481,6 +1507,19 @@
     const r = document.getElementById("results");
     r.style.display = "none";
     r.innerHTML = "";
+    document.getElementById("ad-results").style.display = "none";
+    document.getElementById("amazon-banner").style.display = "none";
+  }
+
+  function showMonetization(keyword) {
+    document.getElementById("ad-results").style.display = "block";
+    const banner = document.getElementById("amazon-banner");
+    banner.style.display = "block";
+    if (keyword) {
+      const q = encodeURIComponent(keyword + " アニメ Blu-ray");
+      document.getElementById("amazon-link").href =
+        `https://www.amazon.co.jp/s?k=${q}&tag=ASSOCIATES-TAG`;
+    }
   }
 
   function resetAll() {
@@ -1673,6 +1712,8 @@
     const cards = await Promise.all(results.map(a => buildCard(a)));
     cards.forEach(c => grid.appendChild(c));
 
+    if (page === 1) showMonetization(genres[0] ?? "アニメ");
+
     // もっと見るボタン
     if (results.length === 24) {
       const btn = document.createElement("button");
@@ -1806,6 +1847,8 @@
         "2人に合う作品が見つかりませんでした。",
         "別のタイトルを入力するか、視聴済みリストを減らして試してください。"
       );
+    } else {
+      showMonetization("アニメ");
     }
   }
 
