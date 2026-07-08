@@ -1746,9 +1746,7 @@
           <button class="modal-close" onclick="closeStreamModal()">✕</button>
         </div>
         <div class="modal-body">
-          <div class="modal-section-label">どこで見る？</div>
-          ${directBtns || ""}
-          <hr class="modal-divider" />
+          ${directBtns ? `<div class="modal-section-label">どこで見る？</div>${directBtns}<hr class="modal-divider" />` : ""}
           <div class="modal-section-label">検索して探す</div>
           <div class="modal-search-row">
             <a class="modal-search-btn" href="https://animestore.docomo.ne.jp/animestore/sch_pc?searchKey=${searchJa}" target="_blank" rel="noopener">dアニメ</a>
