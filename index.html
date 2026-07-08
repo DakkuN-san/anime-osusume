@@ -727,11 +727,92 @@
       right: 1.2rem;
       z-index: 100;
       display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      backdrop-filter: blur(12px);
+    }
+
+    .lang-toggle-pills {
+      display: flex;
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 999px;
       overflow: hidden;
-      backdrop-filter: blur(12px);
+    }
+
+    .help-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: #6b7280;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.18s, color 0.18s;
+      font-family: inherit;
+      flex-shrink: 0;
+    }
+    .help-btn:hover { background: rgba(109,40,217,0.25); color: #c4b5fd; }
+
+    /* ── ヘルプモーダル ── */
+    #help-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      background: rgba(0,0,0,0.72);
+      align-items: flex-start;
+      justify-content: flex-end;
+      padding: 4.5rem 1.2rem 1rem;
+    }
+    #help-modal.open { display: flex; }
+
+    .help-box {
+      background: #111122;
+      border: 0.5px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 320px;
+      padding: 18px 18px 16px;
+    }
+
+    .help-box h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #c4b5fd;
+      margin-bottom: 14px;
+      letter-spacing: 0.03em;
+    }
+
+    .help-item {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .help-item:last-child { margin-bottom: 0; }
+
+    .help-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .help-item-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #e8e8f0;
+      margin-bottom: 2px;
+    }
+
+    .help-item-desc {
+      font-size: 11px;
+      color: #6b7280;
+      line-height: 1.6;
     }
 
     .lang-btn {
@@ -761,10 +842,55 @@
   </style>
 </head>
 <body>
-<!-- 言語切替ボタン -->
+<!-- 右上エリア（ヘルプ + 言語切替） -->
 <div class="lang-toggle">
-  <button class="lang-btn active" id="lang-ja" onclick="setLang('ja')">JP</button>
-  <button class="lang-btn"        id="lang-en" onclick="setLang('en')">EN</button>
+  <button class="help-btn" onclick="toggleHelpModal()" aria-label="使い方">?</button>
+  <div class="lang-toggle-pills">
+    <button class="lang-btn active" id="lang-ja" onclick="setLang('ja')">JP</button>
+    <button class="lang-btn"        id="lang-en" onclick="setLang('en')">EN</button>
+  </div>
+</div>
+
+<!-- ヘルプモーダル -->
+<div id="help-modal" onclick="if(event.target===this)closeHelpModal()">
+  <div class="help-box" id="help-box">
+    <h3>📖 使い方</h3>
+    <div class="help-item">
+      <span class="help-icon">🎭</span>
+      <div>
+        <div class="help-item-title">気分で探す</div>
+        <div class="help-item-desc">ジャンルや気分チップを選び、話数の長さや配信サービスで絞り込んで検索。「もっと見る」でさらに読み込めます。</div>
+      </div>
+    </div>
+    <div class="help-item">
+      <span class="help-icon">👥</span>
+      <div>
+        <div class="help-item-title">2人で探す</div>
+        <div class="help-item-desc">AさんとBさんそれぞれの好きな作品を入力すると、2人に合いそうな作品を提案します。</div>
+      </div>
+    </div>
+    <div class="help-item">
+      <span class="help-icon">🔍</span>
+      <div>
+        <div class="help-item-title">略称OK</div>
+        <div class="help-item-desc">「ワンピ」「JJK」「ヒロアカ」などの略称にも対応しています。</div>
+      </div>
+    </div>
+    <div class="help-item">
+      <span class="help-icon">📺</span>
+      <div>
+        <div class="help-item-title">どこで見る？</div>
+        <div class="help-item-desc">カードをタップすると配信サービスへのリンクが表示されます。Netflix・Prime・Disney+は直リンク、dアニメ・U-NEXTは検索リンクです。</div>
+      </div>
+    </div>
+    <div class="help-item">
+      <span class="help-icon">🚫</span>
+      <div>
+        <div class="help-item-title">視聴済みを除外</div>
+        <div class="help-item-desc">「除外タイトル」欄に見た作品を入力すると結果から省けます。</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="page">
@@ -1696,9 +1822,16 @@
   }
 
   document.addEventListener("keydown", e => {
-    if (e.key === "Escape") closeStreamModal();
+    if (e.key === "Escape") { closeStreamModal(); closeHelpModal(); }
     if (e.key === "Enter" && e.target.tagName !== "TEXTAREA") startSearch();
   });
+
+  function toggleHelpModal() {
+    document.getElementById("help-modal").classList.toggle("open");
+  }
+  function closeHelpModal() {
+    document.getElementById("help-modal").classList.remove("open");
+  }
 
   /* =========================================================
      配信モーダル
